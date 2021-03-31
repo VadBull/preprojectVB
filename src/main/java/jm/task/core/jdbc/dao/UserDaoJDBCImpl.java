@@ -14,12 +14,11 @@ public class UserDaoJDBCImpl implements UserDao {
     public void createUsersTable() throws SQLException{
         try (Connection connection = Util.getMySQLConnection();
              Statement statement = connection.createStatement();){
-            String query = "CREATE TABLE IF NOT EXISTS preproject113" +
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS preproject113" +
                     " (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
                     " name varchar(127)," +
                     " lastName varchar(127)," +
-                    " age INT)";
-            statement.executeUpdate(query);
+                    " age INT)");
             connection.setAutoCommit(false);
             connection.commit();
             System.out.println("Table has been created");
@@ -30,10 +29,9 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() throws SQLException{
-        String query = "DROP TABLE IF EXISTS preproject113";
         try (Connection connection = Util.getMySQLConnection();
              Statement statement = connection.createStatement();){
-            statement.executeUpdate(query);
+            statement.executeUpdate("DROP TABLE IF EXISTS preproject113");
             connection.setAutoCommit(false);
             connection.commit();
             System.out.println("Table has been deleted");
@@ -43,13 +41,13 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) throws SQLException{
-        String query = "INSERT INTO preproject113 (name, lastName, age) " +
-                "VALUES ('" + name + "', '" + lastName + "', " + age + ")";
         try (Connection connection = Util.getMySQLConnection();
-             Statement statement = connection.createStatement()) {
-            statement.executeUpdate(query);
-            connection.setAutoCommit(false);
-            connection.commit();
+             PreparedStatement statement = connection.prepareStatement(
+                     "INSERT INTO preproject113 (name, lastName, age) VALUES (?, ?, ?)")) {
+            statement.setString(1,name);
+            statement.setString(2, lastName);
+            statement.setByte(3, age);
+            statement.executeUpdate();
             System.out.println("User: " + name + " has been added");
         } catch (SQLException | NullPointerException e)  {
             System.out.println("Add user error: " + e.getMessage());
@@ -57,12 +55,11 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void removeUserById(long id) throws SQLException{
-        String query = "DELETE FROM preproject113 WHERE id = " + id;
         try (Connection connection = Util.getMySQLConnection();
-             Statement statement = connection.createStatement()) {
-            statement.executeUpdate(query);
-            connection.setAutoCommit(false);
-            connection.commit();
+             PreparedStatement statement = connection.prepareStatement(
+                     "DELETE FROM preproject113 WHERE id = ?")) {
+            statement.setLong(1, id);
+            statement.executeUpdate();
             System.out.println("User id: " + id + " has been deleted");
         } catch (SQLException e) {
             System.out.println("User delete error: " + e.getMessage());
@@ -72,10 +69,9 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public List<User> getAllUsers() throws SQLException{
         List<User> users = new ArrayList<>();
-        String query = "SELECT * FROM preproject113";
         try (Connection connection = Util.getMySQLConnection();
              Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(query);
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM preproject113");
             while (resultSet.next()) {
                 User user = new User();
                 user.setId(resultSet.getLong("id"));
@@ -94,10 +90,9 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void cleanUsersTable() throws SQLException{
-        String query = "DELETE FROM preproject113";
         try (Connection connection = Util.getMySQLConnection();
              Statement statement = connection.createStatement();) {
-            statement.executeUpdate(query);
+            statement.executeUpdate("DELETE FROM preproject113");
             connection.setAutoCommit(false);
             connection.commit();
             System.out.println("Table has been dropped");
